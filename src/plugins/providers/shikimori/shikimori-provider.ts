@@ -2,7 +2,7 @@ import type { IMetadataProvider } from '../../../core/interfaces.js';
 import { ServiceError } from '../../../errors/index.js';
 import type { AnimeResult, EpisodeInfo } from '../../../types/index.js';
 
-const BASE_URL = 'https://shikimori.one/api';
+const BASE_URL = 'https://shikimori.io/api';
 const USER_AGENT = 'kodik-cli/1.0.0';
 
 interface ShikimoriAnime {
@@ -62,7 +62,7 @@ function mapAnime(a: ShikimoriAnime): AnimeResult {
     worldart_link: null,
     additional_data: {},
     material_data: null,
-    link: `https://shikimori.one/animes/${a.id}`,
+    link: `https://shikimori.io/animes/${a.id}`,
   };
 }
 

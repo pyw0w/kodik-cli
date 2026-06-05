@@ -81,7 +81,7 @@ describe('ShikimoriProvider', () => {
     const p = new ShikimoriProvider();
     await p.search('Наруто', 5);
     const [url] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [string];
-    expect(url).toContain('shikimori.one/api/animes');
+    expect(url).toContain('shikimori.io/api/animes');
     expect(url).toContain('limit=5');
   });
 });
