@@ -1,0 +1,10 @@
+{
+  "id": 20,
+  "name": "Naruto",
+  "russian": "Наруто",
+  "english": ["Naruto"],
+  "kind": "tv",
+  "aired_on": "2002-10-03",
+  "episodes": 220,
+  "episodes_aired": 220
+}
