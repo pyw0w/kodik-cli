@@ -1,0 +1,21 @@
+{
+  "time": "1ms",
+  "total": 1,
+  "results": [
+    {
+      "title": "Наруто",
+      "title_orig": "Naruto",
+      "other_title": "Naruto",
+      "type": "anime-serial",
+      "year": 2002,
+      "screenshots": [],
+      "shikimori_id": "20",
+      "kinopoisk_id": null,
+      "imdb_id": "tt0409591",
+      "worldart_link": null,
+      "additional_data": {},
+      "material_data": null,
+      "link": "//kodik.info/serial/1/player/v2"
+    }
+  ]
+}

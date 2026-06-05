@@ -1,0 +1,8 @@
+{
+  "links": {
+    "360": [{"src": "//cdn.kodik.info/seria/1/360/mp4:hls:manifest.m3u8", "type": "application/x-mpegURL"}],
+    "480": [{"src": "//cdn.kodik.info/seria/1/480/mp4:hls:manifest.m3u8", "type": "application/x-mpegURL"}],
+    "720": [{"src": "//cdn.kodik.info/seria/1/720/mp4:hls:manifest.m3u8", "type": "application/x-mpegURL"}]
+  },
+  "domain": "cdn.kodik.info"
+}
