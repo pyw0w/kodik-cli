@@ -17,7 +17,7 @@ export default defineConfig([
   {
     entry: { 'tui/App': 'src/tui/App.tsx' },
     format: ['esm'],
-    jsx: 'react',
+    jsx: 'react-jsx',
     tsconfig: 'tsconfig.tui.json',
     clean: false,
     sourcemap: true,
