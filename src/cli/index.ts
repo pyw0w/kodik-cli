@@ -4,6 +4,7 @@ import { infoCommand } from './commands/info.js';
 import { linkCommand } from './commands/link.js';
 import { configCommand } from './commands/config.js';
 import { pluginCommand } from './commands/plugin.js';
+import { watchCommand } from './commands/watch.js';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
@@ -22,5 +23,6 @@ program.addCommand(infoCommand);
 program.addCommand(linkCommand);
 program.addCommand(configCommand);
 program.addCommand(pluginCommand);
+program.addCommand(watchCommand);
 
 program.parse();
