@@ -69,7 +69,7 @@ export class KodikPlayer {
   }
 
   async getInfo(playerUrl: string): Promise<MediaInfo> {
-    const html = await safeGet(playerUrl);
+    const html = await safeGet(playerUrl, { 'User-Agent': 'Mozilla/5.0' });
     const parsed = this.extractor.parseHtml(html);
     return {
       translations: parsed.translations,
@@ -83,12 +83,21 @@ export class KodikPlayer {
     episode: number,
     translationId?: string,
   ): Promise<StreamLink> {
-    const html = await safeGet(playerUrl);
+    const html = await safeGet(playerUrl, { 'User-Agent': 'Mozilla/5.0' });
     const parsed = this.extractor.parseHtml(html);
 
-    const jsUrl = 'https:' + parsed.playerJsSrc;
+    // playerJsSrc может быть абсолютным (//kodikplayer.com/...) или относительным (/assets/...)
+    const playerOrigin = new URL(playerUrl).origin;
+    const jsUrl = parsed.playerJsSrc.startsWith('//')
+      ? 'https:' + parsed.playerJsSrc
+      : playerOrigin + parsed.playerJsSrc;
     const jsContent = await safeGet(jsUrl);
-    const postUrl = this.extractor.extractPostUrl(jsContent);
+
+    // postUrl может быть относительным (/ftor) или абсолютным
+    const rawPostUrl = this.extractor.extractPostUrl(jsContent);
+    const postUrl = rawPostUrl.startsWith('/')
+      ? playerOrigin + rawPostUrl
+      : rawPostUrl;
 
     const body: Record<string, string> = {
       ...Object.fromEntries(

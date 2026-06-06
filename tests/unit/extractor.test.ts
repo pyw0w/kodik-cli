@@ -7,8 +7,10 @@ import { Extractor } from '../../src/plugins/players/kodik/extractor.js';
 const fixtureDir = join(fileURLToPath(import.meta.url), '../..', 'fixtures');
 const playerHtml = await readFile(join(fixtureDir, 'kodik-player.html'), 'utf-8');
 const playerScript = await readFile(join(fixtureDir, 'kodik-player-script.js'), 'utf-8');
+const playerHtmlNew = await readFile(join(fixtureDir, 'kodik-player-new-format.html'), 'utf-8');
+const playerScriptNew = await readFile(join(fixtureDir, 'kodik-player-script-new-format.js'), 'utf-8');
 
-describe('Extractor.parseHtml', () => {
+describe('Extractor.parseHtml (old format)', () => {
   it('extracts series list', () => {
     const e = new Extractor();
     const result = e.parseHtml(playerHtml);
@@ -61,10 +63,40 @@ describe('Extractor.parseHtml', () => {
   });
 });
 
+describe('Extractor.parseHtml (new vInfo format)', () => {
+  it('extracts urlParams from single-quoted JSON string', () => {
+    const e = new Extractor();
+    const result = e.parseHtml(playerHtmlNew);
+    expect(result.urlParams['d']).toBe('kodik.cc');
+    expect(result.urlParams['pd']).toBe('kodikplayer.com');
+  });
+
+  it('extracts vInfo video params', () => {
+    const e = new Extractor();
+    const result = e.parseHtml(playerHtmlNew);
+    expect(result.videoParams.type).toBe('seria');
+    expect(result.videoParams.hash).toBe('newformathashabc123');
+    expect(result.videoParams.id).toBe('555555');
+  });
+
+  it('extracts relative JS src', () => {
+    const e = new Extractor();
+    const result = e.parseHtml(playerHtmlNew);
+    expect(result.playerJsSrc).toBe('/assets/js/app.serial.abc123def456.js');
+  });
+});
+
 describe('Extractor.extractPostUrl', () => {
-  it('decodes base64 POST URL from player script', () => {
+  it('decodes base64 POST URL from old-format player script', () => {
     const e = new Extractor();
     const url = e.extractPostUrl(playerScript);
     expect(url).toBe('https://kodik.info/get-videos');
   });
+
+  it('decodes atob POST URL from new-format player script', () => {
+    const e = new Extractor();
+    const url = e.extractPostUrl(playerScriptNew);
+    expect(url).toBe('/ftor');
+  });
 });
+
