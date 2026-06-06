@@ -40,6 +40,7 @@ export function ActionScreen({
   const onBackRef = useRef(onBack);
   const onDoneRef = useRef(onDone);
   const webPlayerUrlRef = useRef(webPlayerUrl);
+  const browserOpenedRef = useRef(false);
 
   selectedIndexRef.current = selectedIndex;
   hlsUrlRef.current = hlsUrl;
@@ -75,8 +76,13 @@ export function ActionScreen({
         }
         if (action.id === 'browser') {
           if (hlsUrlRef.current && webPlayerUrlRef.current) {
-            open(webPlayerUrlRef.current).catch(() => {});
-            setStatusMsg('Открыто в браузере: ' + webPlayerUrlRef.current);
+            if (!browserOpenedRef.current) {
+              open(webPlayerUrlRef.current).catch(() => {});
+              browserOpenedRef.current = true;
+              setStatusMsg('Открыто в браузере: ' + webPlayerUrlRef.current);
+            } else {
+              setStatusMsg('Поток обновлен в браузере');
+            }
           } else {
             setStatusMsg('Веб-плеер недоступен');
           }
