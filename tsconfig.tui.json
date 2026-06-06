@@ -5,6 +5,7 @@
   },
   "include": [
     "src/tui/**/*",
+    "src/types/**/*",
     "src/cli/commands/watch.ts",
     "src/utils/player-launcher.ts"
   ]
