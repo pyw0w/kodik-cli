@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text } from 'ink';
 import { SearchScreen } from './screens/SearchScreen.js';
 import { InfoScreen } from './screens/InfoScreen.js';
 import { ActionScreen } from './screens/ActionScreen.js';
 import { checkPlayers } from '../utils/player-launcher.js';
+import { createWebPlayerServer } from '../utils/web-player-server.js';
 import type { PluginRegistry } from '../core/registry.js';
 import type {
   AnimeResult,
@@ -45,12 +46,24 @@ export function App({ registry }: AppProps) {
     vlc: false,
   });
 
+  const [webPlayerUrl, setWebPlayerUrl] = useState<string | null>(null);
+  const webPlayerServerRef = useRef<ReturnType<typeof createWebPlayerServer> | null>(null);
+
   const [loadingInfo, setLoadingInfo] = useState(false);
   const [loadingStream, setLoadingStream] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setPlayerAvailability(checkPlayers());
+    const webServer = createWebPlayerServer();
+    webPlayerServerRef.current = webServer;
+    webServer.start().then(p => {
+      setWebPlayerUrl(`http://localhost:${p}`);
+    });
+    return () => {
+      webServer.stop();
+      webPlayerServerRef.current = null;
+    };
   }, []);
 
   async function handleAnimeSelect(anime: AnimeResult) {
@@ -86,6 +99,14 @@ export function App({ registry }: AppProps) {
       const player = registry.getPlayer('kodik');
       if (!player) throw new Error('Kodik плеер не найден');
       const stream = await player.getStream(selectedMedia.mediaId, episode, translation.id);
+      if (webPlayerServerRef.current) {
+        webPlayerServerRef.current.updateStream(
+          stream.url,
+          state.selectedAnime?.title ?? '',
+          episode,
+          translation.title,
+        );
+      }
       setState(s => ({
         ...s,
         screen: 'action',
@@ -133,6 +154,7 @@ export function App({ registry }: AppProps) {
         translationTitle={state.selectedTranslation.title}
         hlsUrl={state.hlsUrl}
         playerAvailability={playerAvailability}
+        webPlayerUrl={webPlayerUrl}
         onBack={() => setState(s => ({ ...s, screen: 'info' }))}
         onDone={() => setState(s => ({ ...s, screen: 'info' }))}
       />

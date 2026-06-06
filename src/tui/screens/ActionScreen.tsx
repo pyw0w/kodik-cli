@@ -1,5 +1,6 @@
 import React, { useState, useLayoutEffect, useRef } from 'react';
 import { Box, Text, useStdin } from 'ink';
+import open from 'open';
 import { StatusBar } from '../components/StatusBar.js';
 import { launchMpv, launchVlc } from '../../utils/player-launcher.js';
 import type { ExternalPlayer } from '../../utils/player-launcher.js';
@@ -10,6 +11,7 @@ interface ActionScreenProps {
   translationTitle: string;
   hlsUrl: string;
   playerAvailability: Record<ExternalPlayer, boolean>;
+  webPlayerUrl?: string | null;
   onBack: () => void;
   onDone: () => void;
 }
@@ -25,7 +27,7 @@ const ACTIONS: { id: Action; label: string; description: string }[] = [
 
 export function ActionScreen({
   title, episode, translationTitle, hlsUrl,
-  playerAvailability, onBack, onDone,
+  playerAvailability, webPlayerUrl, onBack, onDone,
 }: ActionScreenProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
@@ -37,12 +39,14 @@ export function ActionScreen({
   const playerAvailabilityRef = useRef(playerAvailability);
   const onBackRef = useRef(onBack);
   const onDoneRef = useRef(onDone);
+  const webPlayerUrlRef = useRef(webPlayerUrl);
 
   selectedIndexRef.current = selectedIndex;
   hlsUrlRef.current = hlsUrl;
   playerAvailabilityRef.current = playerAvailability;
   onBackRef.current = onBack;
   onDoneRef.current = onDone;
+  webPlayerUrlRef.current = webPlayerUrl;
 
   useLayoutEffect(() => {
     setRawMode(true);
@@ -70,7 +74,12 @@ export function ActionScreen({
           return;
         }
         if (action.id === 'browser') {
-          setStatusMsg('Веб-плеер ещё не готов, используйте Ссылку');
+          if (hlsUrlRef.current && webPlayerUrlRef.current) {
+            open(webPlayerUrlRef.current).catch(() => {});
+            setStatusMsg('Открыто в браузере: ' + webPlayerUrlRef.current);
+          } else {
+            setStatusMsg('Веб-плеер недоступен');
+          }
           return;
         }
         if (action.id === 'link') {
@@ -97,6 +106,7 @@ export function ActionScreen({
   const isAvailable = (id: Action): boolean => {
     if (id === 'mpv') return playerAvailability.mpv;
     if (id === 'vlc') return playerAvailability.vlc;
+    if (id === 'browser') return !!webPlayerUrl;
     return true;
   };
 
