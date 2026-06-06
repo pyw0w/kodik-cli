@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src/tui/**/*",
+    "src/cli/commands/watch.ts",
+    "src/utils/player-launcher.ts"
+  ]
+}
