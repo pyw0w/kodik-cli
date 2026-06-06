@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import { Box, Text, useStdin } from 'ink';
 import { EpisodeGrid } from '../components/EpisodeGrid.js';
 import { StatusBar } from '../components/StatusBar.js';
@@ -19,39 +19,44 @@ export function InfoScreen({ anime, mediaInfo, onSelect, onBack }: InfoScreenPro
 
   const { stdin, setRawMode } = useStdin();
 
-  // useLayoutEffect ensures listener is registered synchronously (before any stdin.write in tests)
+  // Use refs so the single stable listener always sees current state without re-registration
+  const activePanelRef = useRef(activePanel);
+  const translationIndexRef = useRef(translationIndex);
+  const selectedEpisodeRef = useRef(selectedEpisode);
+  const onSelectRef = useRef(onSelect);
+  const onBackRef = useRef(onBack);
+  const mediaInfoRef = useRef(mediaInfo);
+
+  activePanelRef.current = activePanel;
+  translationIndexRef.current = translationIndex;
+  selectedEpisodeRef.current = selectedEpisode;
+  onSelectRef.current = onSelect;
+  onBackRef.current = onBack;
+  mediaInfoRef.current = mediaInfo;
+
   useLayoutEffect(() => {
     setRawMode(true);
 
     const handleData = (data: Buffer | string) => {
       const s = Buffer.isBuffer(data) ? data.toString() : data;
+      const panel = activePanelRef.current;
+      const tIdx = translationIndexRef.current;
+      const ep = selectedEpisodeRef.current;
+      const info = mediaInfoRef.current;
 
-      // ESC key
-      if (s === '\x1B' || s === '\x1B\x1B') { onBack(); return; }
+      if (s === '\x1B' || s === '\x1B\x1B') { onBackRef.current(); return; }
+      if (s === '\t') { setActivePanel(p => p === 'translations' ? 'episodes' : 'translations'); return; }
 
-      // Tab — switch panels
-      if (s === '\t') {
-        setActivePanel(p => p === 'translations' ? 'episodes' : 'translations');
-        return;
-      }
-
-      // Arrow keys and Enter
-      if (activePanel === 'translations') {
-        if (s === '\x1B[A') setTranslationIndex(i => Math.max(0, i - 1)); // up
-        if (s === '\x1B[B') setTranslationIndex(i => Math.min(mediaInfo.translations.length - 1, i + 1)); // down
-        if (s === '\r') {
-          const tr = mediaInfo.translations[translationIndex];
-          if (tr) onSelect(selectedEpisode, tr);
-        }
+      if (panel === 'translations') {
+        if (s === '\x1B[A') setTranslationIndex(i => Math.max(0, i - 1));
+        if (s === '\x1B[B') setTranslationIndex(i => Math.min(info.translations.length - 1, i + 1));
+        if (s === '\r') { const tr = info.translations[tIdx]; if (tr) onSelectRef.current(ep, tr); }
       } else {
-        if (s === '\x1B[D') setSelectedEpisode(ep => Math.max(1, ep - 1)); // left
-        if (s === '\x1B[C') setSelectedEpisode(ep => Math.min(mediaInfo.series_count, ep + 1)); // right
-        if (s === '\x1B[A') setSelectedEpisode(ep => Math.max(1, ep - 8)); // up
-        if (s === '\x1B[B') setSelectedEpisode(ep => Math.min(mediaInfo.series_count, ep + 8)); // down
-        if (s === '\r') {
-          const tr = mediaInfo.translations[translationIndex];
-          if (tr) onSelect(selectedEpisode, tr);
-        }
+        if (s === '\x1B[D') setSelectedEpisode(e => Math.max(1, e - 1));
+        if (s === '\x1B[C') setSelectedEpisode(e => Math.min(info.series_count, e + 1));
+        if (s === '\x1B[A') setSelectedEpisode(e => Math.max(1, e - 8));
+        if (s === '\x1B[B') setSelectedEpisode(e => Math.min(info.series_count, e + 8));
+        if (s === '\r') { const tr = info.translations[tIdx]; if (tr) onSelectRef.current(ep, tr); }
       }
     };
 
@@ -60,7 +65,7 @@ export function InfoScreen({ anime, mediaInfo, onSelect, onBack }: InfoScreenPro
       stdin.off('data', handleData);
       setRawMode(false);
     };
-  }, [activePanel, translationIndex, selectedEpisode, mediaInfo, onSelect, onBack, stdin, setRawMode]);
+  }, [stdin, setRawMode]);
 
   return (
     <Box flexDirection="column" height="100%">
